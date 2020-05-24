@@ -393,6 +393,18 @@ mempoolLoop:
 	if err != nil {
 		return nil, miningRuleError(ErrGettingDifficulty, err.Error())
 	}
+
+	//
+	reqX8r16Difficulty, err := blockManager.GetChain().CalcNextRequiredDifficulty(ts, pow.X8R16)
+	if err != nil {
+		return nil, miningRuleError(ErrGettingDifficulty, err.Error())
+	}
+
+	//
+	keccak256Difficulty, err := blockManager.GetChain().CalcNextRequiredDifficulty(ts, pow.QITMEERKECCAK256)
+	if err != nil {
+		return nil, miningRuleError(ErrGettingDifficulty, err.Error())
+	}
 	reqCuckarooDifficulty, err := blockManager.GetChain().CalcNextRequiredDifficulty(ts, pow.CUCKAROO)
 	if err != nil {
 		return nil, miningRuleError(ErrGettingDifficulty, err.Error())
@@ -463,11 +475,13 @@ mempoolLoop:
 		Blues:           blues,
 		ValidPayAddress: payToAddress != nil,
 		PowDiffData: types.PowDiffStandard{
-			Blake2bDTarget:    reqBlake2bDDifficulty,
-			X16rv3DTarget:     reqX16rv3Difficulty,
-			CuckarooBaseDiff:  pow.CompactToBig(reqCuckarooDifficulty).Uint64(),
-			CuckaroomBaseDiff: pow.CompactToBig(reqCuckaroomDifficulty).Uint64(),
-			CuckatooBaseDiff:  pow.CompactToBig(reqCuckatooDifficulty).Uint64(),
+			Blake2bDTarget:         reqBlake2bDDifficulty,
+			X16rv3DTarget:          reqX16rv3Difficulty,
+			X8r16DTarget:           reqX8r16Difficulty,
+			QitmeerKeccak256Target: keccak256Difficulty,
+			CuckarooBaseDiff:       pow.CompactToBig(reqCuckarooDifficulty).Uint64(),
+			CuckaroomBaseDiff:      pow.CompactToBig(reqCuckaroomDifficulty).Uint64(),
+			CuckatooBaseDiff:       pow.CompactToBig(reqCuckatooDifficulty).Uint64(),
 		},
 	}
 	return handleCreatedBlockTemplate(blockTemplate, blockManager)
