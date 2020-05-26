@@ -18,6 +18,7 @@ import (
 	"github.com/Qitmeer/qitmeer/services/mining"
 	"github.com/Qitmeer/qitmeer/services/notifymgr"
 	"github.com/Qitmeer/qitmeer/services/tx"
+	"github.com/Qitmeer/qitmeer/utreexo"
 )
 
 // QitmeerFull implements the qitmeer full node service.
@@ -42,6 +43,9 @@ type QitmeerFull struct {
 	timeSource blockchain.MedianTimeSource
 	// signature cache
 	sigCache *txscript.SigCache
+
+	// utreexo node
+	utreexoNode *utreexo.UtreexoModule
 }
 
 func (qm *QitmeerFull) Start(server *peerserver.PeerServer) error {
@@ -54,6 +58,7 @@ func (qm *QitmeerFull) Start(server *peerserver.PeerServer) error {
 
 	qm.blockManager.Start()
 	qm.txManager.Start()
+	qm.utreexoNode.Start()
 	return nil
 }
 
@@ -62,6 +67,7 @@ func (qm *QitmeerFull) Stop() error {
 
 	log.Info("try stop bm")
 
+	qm.utreexoNode.Stop()
 	qm.blockManager.Stop()
 	qm.blockManager.WaitForStop()
 
@@ -169,7 +175,8 @@ func newQitmeerFullNode(node *Node) (*QitmeerFull, error) {
 	qm.cpuMiner = miner.NewCPUMiner(cfg, node.Params, &policy, qm.sigCache,
 		qm.txManager.MemPool().(*mempool.TxPool), qm.timeSource, qm.blockManager, defaultNumWorkers)
 
-	return &qm, nil
+	qm.utreexoNode, err = utreexo.NewUtreexoModule(qm.blockManager.GetChain(), node.DB, node.Config)
+	return &qm, err
 }
 
 // return block manager

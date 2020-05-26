@@ -85,6 +85,9 @@ type Config struct {
 
 	Zmqpubhashtx string `long:"zmqpubhashtx" description:"Enable publish hash transaction in <address>"`
 	Zmqpubrawtx  string `long:"zmqpubrawtx" description:"Enable publish raw transaction in <address>"`
+
+	Utreexo     bool `long:"utreexo" description:"Enable utreexo module"`
+	DropUtreexo bool `long:"droputreexo" description:"Deletes the utreexo from the database on start up and then exits."`
 }
 
 func (c *Config) GetMinningAddrs() []types.Address {

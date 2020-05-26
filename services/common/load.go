@@ -84,6 +84,7 @@ func LoadConfig() (*config.Config, []string, error) {
 		MaxInbound:        defaultMaxInboundPeersPerHost,
 		TxIndex:           true,
 		TrickleInterval:   defaultTrickleInterval,
+		Utreexo:           true,
 	}
 
 	// Pre-parse the command line options to see if an alternative config

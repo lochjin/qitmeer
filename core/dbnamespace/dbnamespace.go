@@ -67,4 +67,10 @@ var (
 	// DagInfoBucketName is the name of the db bucket used to house the
 	// dag information
 	DagInfoBucketName = []byte("daginfo")
+
+	// Utreexo information
+	UtreexoInfoBucketName = []byte("utreexoinfo")
+
+	// Utreexo proof data
+	UtreexoProofBucketName = []byte("utreexoproof")
 )

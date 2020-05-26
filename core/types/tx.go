@@ -10,6 +10,7 @@ import (
 	"github.com/Qitmeer/qitmeer/common/math"
 	s "github.com/Qitmeer/qitmeer/core/serialization"
 	"io"
+	"strconv"
 	"time"
 )
 
@@ -937,6 +938,15 @@ func NewTxDeepTxIns(msgTx *Transaction) *Tx {
 type TxOutPoint struct {
 	Hash     hash.Hash //txid
 	OutIndex uint32    //vout
+}
+
+// String returns the OutPoint in the human-readable form "hash:index".
+func (o TxOutPoint) String() string {
+	buf := make([]byte, 2*hash.HashSize+1, 2*hash.HashSize+1+10)
+	copy(buf, o.Hash.String())
+	buf[2*hash.HashSize] = ':'
+	buf = strconv.AppendUint(buf, uint64(o.OutIndex), 10)
+	return string(buf)
 }
 
 // NewOutPoint returns a new transaction outpoint point with the

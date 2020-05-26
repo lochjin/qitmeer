@@ -456,6 +456,17 @@ func (bd *BlockDAG) GetBlockByOrder(order uint) *hash.Hash {
 	return bd.instance.GetBlockByOrder(order)
 }
 
+// Obtain block hash by global order
+func (bd *BlockDAG) GetIBlockByOrder(order uint) IBlock {
+	bd.stateLock.Lock()
+	defer bd.stateLock.Unlock()
+	id, ok := bd.order[order]
+	if !ok {
+		return nil
+	}
+	return bd.getBlockById(id)
+}
+
 // Return the last order block
 func (bd *BlockDAG) GetLastBlock() IBlock {
 	// TODO
