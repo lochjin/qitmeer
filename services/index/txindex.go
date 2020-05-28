@@ -344,6 +344,16 @@ func dbRemoveTxIdByHash(dbTx database.Tx, txhash hash.Hash) error {
 	return txidByTxhash.Delete(txhash[:])
 }
 
+// DBHasTxIndexEntry
+func DBHasTxIndexEntry(dbTx database.Tx, txHash *hash.Hash) bool {
+	txIndex := dbTx.Metadata().Bucket(txIndexKey)
+	serializedData := txIndex.Get(txHash[:])
+	if len(serializedData) == 0 {
+		return false
+	}
+	return true
+}
+
 // TxIndex implements a transaction by hash index.  That is to say, it supports
 // querying all transactions by their hash.
 type TxIndex struct {

@@ -110,10 +110,16 @@ func newQitmeerFullNode(node *Node) (*QitmeerFull, error) {
 
 	var txIndex *index.TxIndex
 	var addrIndex *index.AddrIndex
-	if cfg.TxIndex || cfg.AddrIndex {
+	if cfg.TxIndex || cfg.AddrIndex || cfg.Utreexo {
 		if !cfg.TxIndex {
-			log.Info("Transaction index enabled because it " +
-				"is required by the address index")
+			if cfg.AddrIndex {
+				log.Info("Transaction index enabled because it " +
+					"is required by the address index")
+			} else {
+				log.Info("Transaction index enabled because it " +
+					"is required by the utreexo")
+			}
+
 			cfg.TxIndex = true
 		} else {
 			log.Info("Transaction index is enabled")

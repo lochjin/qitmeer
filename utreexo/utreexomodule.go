@@ -122,7 +122,23 @@ func (bn *UtreexoModule) catchUpIndex(mainIB blockdag.IBlock) error {
 		if err != nil {
 			return err
 		}
-		err = bn.buildProofs(&addBlockMsg{block, i})
+		txs := []*types.Transaction{}
+		err = bn.db.View(func(dbTx database.Tx) error {
+
+			for i, tx := range block.Transactions() {
+				if index.DBHasTxIndexEntry(dbTx, tx.Hash()) {
+					txs = append(txs, tx.Tx)
+				} else if i == 0 {
+					return fmt.Errorf("The block is invalid")
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			continue
+		}
+
+		err = bn.buildProofs(&addBlockMsg{block, txs, i})
 		if err != nil {
 			return err
 		}
