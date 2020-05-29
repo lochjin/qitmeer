@@ -294,6 +294,13 @@ func (bn *UtreexoModule) buildProofs(msg *addBlockMsg) error {
 	if err != nil {
 		return err
 	}
+	bn.info.indexOrder = msg.order
+	bn.info.indexHash = *msg.blk.Hash()
+	err = bn.updateDB()
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
 	return nil
 }
 
@@ -456,16 +463,6 @@ func (bn *UtreexoModule) BlockToAddLeaves(blk *types.SerializedBlock,
 		}
 	}
 	return
-}
-
-func DBPutUData(dbTx database.Tx, udata *UData) error {
-	bucket := dbTx.Metadata().Bucket(dbnamespace.UtreexoProofBucketName)
-	var serializedID [4]byte
-	dbnamespace.ByteOrder.PutUint32(serializedID[:], uint32(udata.Order))
-
-	key := serializedID[:]
-
-	return bucket.Put(key, udata.ToBytes())
 }
 
 func genUData(delLeaves []LeafData, f *accumulator.Forest, order uint32) (

@@ -34,6 +34,14 @@ func (ui *UtreexoInfo) deserialize(serializedData []byte) error {
 	return nil
 }
 
+func (ui *UtreexoInfo) toBytes() []byte {
+	serializedLen := hash.HashSize + 4
+	serializedData := make([]byte, serializedLen)
+	copy(serializedData[0:hash.HashSize], ui.indexHash[:])
+	dbnamespace.ByteOrder.PutUint32(serializedData[hash.HashSize:], uint32(ui.indexOrder))
+	return serializedData[:]
+}
+
 func (ui *UtreexoInfo) GetHash() *hash.Hash {
 	return &ui.indexHash
 }
