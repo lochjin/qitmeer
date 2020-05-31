@@ -7,7 +7,7 @@ import (
 
 type addBlockMsg struct {
 	blk   *types.SerializedBlock
-	txs   []*types.Transaction
+	txs   map[int]*types.Transaction
 	order uint
 }
 

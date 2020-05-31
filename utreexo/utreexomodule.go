@@ -122,12 +122,12 @@ func (bn *UtreexoModule) catchUpIndex(mainIB blockdag.IBlock) error {
 		if err != nil {
 			return err
 		}
-		txs := []*types.Transaction{}
+		txs := map[int]*types.Transaction{}
 		err = bn.db.View(func(dbTx database.Tx) error {
 
 			for i, tx := range block.Transactions() {
 				if index.DBHasTxIndexEntry(dbTx, tx.Hash()) {
-					txs = append(txs, tx.Tx)
+					txs[i] = tx.Tx
 				} else if i == 0 {
 					return fmt.Errorf("The block is invalid")
 				}
@@ -307,7 +307,7 @@ func (bn *UtreexoModule) buildProofs(msg *addBlockMsg) error {
 func (bn *UtreexoModule) blockToAddDel(msg *addBlockMsg) (blockAdds []accumulator.Leaf,
 	delLeaves []LeafData, err error) {
 
-	inskip, outskip := bn.DedupeBlock(msg.blk)
+	inskip, outskip := bn.DedupeBlock(msg)
 	// fmt.Printf("inskip %v outskip %v\n", inskip, outskip)
 	delLeaves, err = bn.blockToDelLeaves(msg, inskip)
 	if err != nil {
@@ -320,16 +320,20 @@ func (bn *UtreexoModule) blockToAddDel(msg *addBlockMsg) (blockAdds []accumulato
 	return
 }
 
-func (bn *UtreexoModule) DedupeBlock(blk *types.SerializedBlock) (inskip []uint32, outskip []uint32) {
+func (bn *UtreexoModule) DedupeBlock(msg *addBlockMsg) (inskip []uint32, outskip []uint32) {
 
 	var i uint32
 	// wire.Outpoints are comparable with == which is nice.
 	inmap := make(map[types.TxOutPoint]uint32)
 
 	// go through txs then inputs building map
-	for cbif0, tx := range blk.Transactions() {
+	for cbif0, tx := range msg.blk.Transactions() {
 		if cbif0 == 0 { // coinbase tx can't be deduped
 			i++
+			continue
+		}
+		_, ok := msg.txs[cbif0]
+		if !ok {
 			continue
 		}
 		for _, in := range tx.Tx.TxIn {
@@ -341,11 +345,16 @@ func (bn *UtreexoModule) DedupeBlock(blk *types.SerializedBlock) (inskip []uint3
 
 	i = 0
 	// start over, go through outputs finding skips
-	for cbif0, tx := range blk.Transactions() {
+	for cbif0, tx := range msg.blk.Transactions() {
 		if cbif0 == 0 { // coinbase tx can't be deduped
 			i += uint32(len(tx.Tx.TxOut))
 			continue
 		}
+		_, ok := msg.txs[cbif0]
+		if !ok {
+			continue
+		}
+
 		txid := tx.Tx.TxHash()
 
 		for outidx, _ := range tx.Tx.TxOut {
