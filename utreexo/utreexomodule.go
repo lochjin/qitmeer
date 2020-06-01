@@ -334,6 +334,7 @@ func (bn *UtreexoModule) DedupeBlock(msg *addBlockMsg) (inskip []uint32, outskip
 		}
 		_, ok := msg.txs[cbif0]
 		if !ok {
+			i += uint32(len(tx.Tx.TxIn))
 			continue
 		}
 		for _, in := range tx.Tx.TxIn {
@@ -352,6 +353,7 @@ func (bn *UtreexoModule) DedupeBlock(msg *addBlockMsg) (inskip []uint32, outskip
 		}
 		_, ok := msg.txs[cbif0]
 		if !ok {
+			i += uint32(len(tx.Tx.TxOut))
 			continue
 		}
 
@@ -385,13 +387,15 @@ func (bn *UtreexoModule) blockToDelLeaves(msg *addBlockMsg, skiplist []uint32) (
 			blockInIdx++ // coinbase tx always has 1 input
 			continue
 		}
-		txinblock--
-
+		_, ok := msg.txs[txinblock]
+		if !ok {
+			blockInIdx += uint32(len(tx.Tx.TxIn))
+			continue
+		}
 		// loop through inputs
 		for _, txin := range tx.Tx.TxIn {
 			// check if on skiplist.  If so, don't make leaf
 			if len(skiplist) > 0 && skiplist[0] == blockInIdx {
-				// fmt.Printf("skip %s\n", txin.PreviousOutPoint.String())
 				skiplist = skiplist[1:]
 				blockInIdx++
 				continue
@@ -411,6 +415,7 @@ func (bn *UtreexoModule) blockToDelLeaves(msg *addBlockMsg, skiplist []uint32) (
 			})
 
 			if err != nil {
+				blockInIdx++
 				continue
 			}
 			l.Outpoint = txin.PreviousOut
