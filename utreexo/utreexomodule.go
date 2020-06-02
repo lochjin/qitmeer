@@ -315,7 +315,7 @@ func (bn *UtreexoModule) blockToAddDel(msg *addBlockMsg) (blockAdds []accumulato
 	}
 
 	// this is bridgenode, so don't need to deal with memorable leaves
-	blockAdds = bn.BlockToAddLeaves(msg.blk, nil, outskip, uint32(msg.order))
+	blockAdds = bn.BlockToAddLeaves(msg, nil, outskip, uint32(msg.order))
 
 	return
 }
@@ -404,22 +404,30 @@ func (bn *UtreexoModule) blockToDelLeaves(msg *addBlockMsg, skiplist []uint32) (
 			// build leaf
 			var l LeafData
 			var preTx *types.Transaction
+			var preBlockH *hash.Hash
 			err := bn.db.View(func(dbTx database.Tx) error {
-				dtx, erro := index.DBFetchTx(dbTx, &txin.PreviousOut.Hash)
+				dtx, blockH, erro := index.DBFetchTxAndBlock(dbTx, &txin.PreviousOut.Hash)
 				if erro != nil {
 					return erro
 				}
 				preTx = dtx
-
+				preBlockH = blockH
 				return nil
 			})
 
 			if err != nil {
+				log.Error(err.Error())
+				blockInIdx++
+				continue
+			}
+			ib := bn.bd.GetBlock(preBlockH)
+			if ib == nil {
+				log.Error(err.Error())
 				blockInIdx++
 				continue
 			}
 			l.Outpoint = txin.PreviousOut
-			l.Order = uint32(msg.order)
+			l.Order = uint32(ib.GetOrder())
 			l.Coinbase = preTx.IsCoinBase()
 			// TODO get blockhash from headers here -- empty for now
 			// l.BlockHash = getBlockHashByHeight(l.CbHeight >> 1)
@@ -432,13 +440,18 @@ func (bn *UtreexoModule) blockToDelLeaves(msg *addBlockMsg, skiplist []uint32) (
 	return
 }
 
-func (bn *UtreexoModule) BlockToAddLeaves(blk *types.SerializedBlock,
+func (bn *UtreexoModule) BlockToAddLeaves(msg *addBlockMsg,
 	remember []bool, skiplist []uint32,
 	order uint32) (leaves []accumulator.Leaf) {
 
 	var txonum uint32
 	// bh := bl.Blockhash
-	for coinbaseif0, tx := range blk.Transactions() {
+	for coinbaseif0, tx := range msg.blk.Transactions() {
+		_, ok := msg.txs[coinbaseif0]
+		if !ok {
+			txonum += uint32(len(tx.Tx.TxOut))
+			continue
+		}
 		// cache txid aka txhash
 		txid := tx.Tx.TxHash()
 		for i, out := range tx.Tx.TxOut {
