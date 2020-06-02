@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"github.com/Qitmeer/qitmeer/log"
 	"sort"
 )
 
@@ -468,7 +469,7 @@ func BinString(leaves uint64) string {
 // BtU32 : 4 byte slice to uint32.  Returns ffffffff if something doesn't work.
 func BtU32(b []byte) uint32 {
 	if len(b) != 4 {
-		fmt.Printf("Got %x to BtU32 (%d bytes)\n", b, len(b))
+		log.Error(fmt.Sprintf("Got %x to BtU32 (%d bytes)\n", b, len(b)))
 		return 0xffffffff
 	}
 	var i uint32
@@ -487,7 +488,7 @@ func U32tB(i uint32) []byte {
 // BtU64 : 8 bytes to uint64.  returns ffff. if it doesn't work.
 func BtU64(b []byte) uint64 {
 	if len(b) != 8 {
-		fmt.Printf("Got %x to BtU64 (%d bytes)\n", b, len(b))
+		log.Error(fmt.Sprintf("Got %x to BtU64 (%d bytes)\n", b, len(b)))
 		return 0xffffffffffffffff
 	}
 	var i uint64
@@ -506,7 +507,7 @@ func U64tB(i uint64) []byte {
 // BtU8 : 1 byte to uint8.  returns ffff. if it doesn't work.
 func BtU8(b []byte) uint8 {
 	if len(b) != 1 {
-		fmt.Printf("Got %x to BtU8 (%d bytes)\n", b, len(b))
+		log.Error(fmt.Sprintf("Got %x to BtU8 (%d bytes)\n", b, len(b)))
 		return 0xff
 	}
 	var i uint8

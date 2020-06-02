@@ -3,6 +3,7 @@ package accumulator
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/Qitmeer/qitmeer/log"
 	"io"
 )
 
@@ -65,19 +66,19 @@ func (n *polNode) chop() {
 //  printout printfs the node
 func (n *polNode) printout() {
 	if n == nil {
-		fmt.Printf("nil node\n")
+		log.Error(fmt.Sprintf("nil node\n"))
 		return
 	}
-	fmt.Printf("Node %x ", n.data[:4])
+	log.Trace(fmt.Sprintf("Node %x ", n.data[:4]))
 	if n.niece[0] == nil {
-		fmt.Printf("l nil ")
+		log.Trace(fmt.Sprintf("l nil "))
 	} else {
-		fmt.Printf("l %x ", n.niece[0].data[:4])
+		log.Trace(fmt.Sprintf("l %x ", n.niece[0].data[:4]))
 	}
 	if n.niece[1] == nil {
-		fmt.Printf("r nil\n")
+		log.Trace(fmt.Sprintf("r nil\n"))
 	} else {
-		fmt.Printf("r %x\n", n.niece[1].data[:4])
+		log.Trace(fmt.Sprintf("r %x\n", n.niece[1].data[:4]))
 	}
 	return
 }
@@ -139,27 +140,27 @@ func (p *Pollard) WritePollard(w io.Writer) error {
 			return err
 		}
 	}
-	fmt.Println("Pollard leaves:", p.numLeaves)
+	log.Trace(fmt.Sprintf("Pollard leaves:", p.numLeaves))
 	return nil
 }
 
 func (p *Pollard) RestorePollard(r io.Reader) error {
-	fmt.Println("Restoring Pollard Roots...")
+	log.Trace(fmt.Sprintf("Restoring Pollard Roots..."))
 	err := binary.Read(r, binary.BigEndian, &p.numLeaves)
 	if err != nil {
 		return err
 	}
 
 	p.roots = make([]polNode, numRoots(p.numLeaves))
-	fmt.Printf("%d leaves %d roots ", p.numLeaves, len(p.roots))
+	log.Trace(fmt.Sprintf("%d leaves %d roots ", p.numLeaves, len(p.roots)))
 	for i, _ := range p.roots {
 		bytesRead, err := r.Read(p.roots[i].data[:])
 		// ignore EOF error at the end of successful reading
 		if err != nil && !(bytesRead == 32 && err == io.EOF) {
-			fmt.Printf("on hash %d read %d ", i, bytesRead)
+			log.Error(fmt.Sprintf("on hash %d read %d ", i, bytesRead))
 			return err
 		}
 	}
-	fmt.Println("Finished restoring pollard")
+	log.Trace(fmt.Sprintf("Finished restoring pollard"))
 	return nil
 }

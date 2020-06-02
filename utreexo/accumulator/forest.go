@@ -2,6 +2,7 @@ package accumulator
 
 import (
 	"fmt"
+	"github.com/Qitmeer/qitmeer/log"
 	"os"
 	"time"
 )
@@ -211,7 +212,7 @@ func (f *Forest) swapNodes(s arrow, row uint8) {
 	if s.from == s.to {
 		// these shouldn't happen, and seems like the don't
 
-		fmt.Printf("%s\nmove %d to %d\n", f.ToString(), s.from, s.to)
+		log.Trace(fmt.Sprintf("%s\nmove %d to %d\n", f.ToString(), s.from, s.to))
 		panic("got non-moving swap")
 	}
 	if row == 0 {
@@ -288,7 +289,7 @@ func (f *Forest) reHash(dirt []uint64) error {
 	// floor by floor
 	for r = uint8(0); r < f.rows; r++ {
 		if bridgeVerbose {
-			fmt.Printf("dirty %v\ncurrentRow %v\n", dirty2d[r], currentRow)
+			log.Trace(fmt.Sprintf("dirty %v\ncurrentRow %v\n", dirty2d[r], currentRow))
 		}
 
 		// merge nextRow and the dirtySlice.  They're both sorted so this
@@ -450,7 +451,7 @@ func (f *Forest) reMap(destRows uint8) error {
 		return fmt.Errorf("changing by more than 1 not programmed yet")
 	}
 
-	fmt.Printf("remap forest %d rows -> %d rows\n", f.rows, destRows)
+	log.Trace(fmt.Sprintf("remap forest %d rows -> %d rows\n", f.rows, destRows))
 
 	// for row reduction
 	if destRows < f.rows {
@@ -550,16 +551,16 @@ func RestoreForest(miscForestFile *os.File, forestFile *os.File) (*Forest, error
 		return nil, err
 	}
 	f.numLeaves = BtU64(byteLeaves[:])
-	fmt.Println("Forest leaves:", f.numLeaves)
+	log.Trace(fmt.Sprintf("Forest leaves:%d", f.numLeaves))
 
 	// This restores the positionMap
 	var i uint64
-	fmt.Printf("%d iterations to do\n", f.numLeaves)
+	log.Trace(fmt.Sprintf("%d iterations to do", f.numLeaves))
 	for i = uint64(0); i < f.numLeaves; i++ {
 		f.positionMap[f.data.read(i).Mini()] = i
 
 		if i%uint64(100000) == 0 && i != uint64(0) {
-			fmt.Printf("Done %d iterations\n", i)
+			log.Trace(fmt.Sprintf("Done %d iterations\n", i))
 		}
 	}
 	if f.positionMap == nil {
@@ -573,8 +574,8 @@ func RestoreForest(miscForestFile *os.File, forestFile *os.File) (*Forest, error
 		return nil, err
 	}
 	f.rows = BtU8(byteRows[:])
-	fmt.Println("Forest rows:", f.rows)
-	fmt.Println("Done restoring forest")
+	log.Trace(fmt.Sprintf("Forest rows:%d", f.rows))
+	log.Trace(fmt.Sprintf("Done restoring forest"))
 
 	return f, nil
 }
@@ -591,8 +592,8 @@ func (f *Forest) PrintPositionMap() string {
 
 // WriteForest writes the numLeaves and rows to miscForestFile
 func (f *Forest) WriteForest(miscForestFile *os.File) error {
-	fmt.Println("numLeaves=", f.numLeaves)
-	fmt.Println("f.rows=", f.rows)
+	log.Trace(fmt.Sprintf("numLeaves=", f.numLeaves))
+	log.Trace(fmt.Sprintf("f.rows=", f.rows))
 	_, err := miscForestFile.WriteAt(append(U64tB(f.numLeaves), U8tB(f.rows)...), 0)
 	if err != nil {
 		return err

@@ -2,6 +2,7 @@ package accumulator
 
 import (
 	"fmt"
+	"github.com/Qitmeer/qitmeer/log"
 	"sync"
 )
 
@@ -220,7 +221,7 @@ func (p *Pollard) rem2(dels []uint64) error {
 				// TODO when is hn nil?  is this OK?
 				// it'd be better to avoid this and not create hns that aren't
 				// supposed to exist.
-				fmt.Printf("hn %d nil or uncomputable\n", hn.position)
+				log.Trace(fmt.Sprintf("hn %d nil or uncomputable\n", hn.position))
 				wg.Done()
 				continue
 			}
@@ -474,8 +475,8 @@ func (p *Pollard) equalToForest(f *Forest) bool {
 			return false
 		}
 		if n.data != f.data.read(leafpos) {
-			fmt.Printf("leaf position %d pol %x != forest %x\n",
-				leafpos, n.data[:4], f.data.read(leafpos).Prefix())
+			log.Error(fmt.Sprintf("leaf position %d pol %x != forest %x\n",
+				leafpos, n.data[:4], f.data.read(leafpos).Prefix()))
 			return false
 		}
 	}
@@ -496,8 +497,8 @@ func (p *Pollard) equalToForestIfThere(f *Forest) bool {
 			continue // ignore grabPos errors / nils
 		}
 		if n.data != f.data.read(leafpos) {
-			fmt.Printf("leaf position %d pol %x != forest %x\n",
-				leafpos, n.data[:4], f.data.read(leafpos).Prefix())
+			log.Error(fmt.Sprintf("leaf position %d pol %x != forest %x\n",
+				leafpos, n.data[:4], f.data.read(leafpos).Prefix()))
 			return false
 		}
 	}

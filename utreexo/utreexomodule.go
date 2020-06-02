@@ -76,12 +76,6 @@ func (bn *UtreexoModule) Init() error {
 	if err != nil {
 		return err
 	}
-	if bn.info.isValid() {
-		curIB := bn.bd.GetBlockByOrder(bn.info.indexOrder)
-		if !curIB.IsEqual(bn.info.GetHash()) {
-			return fmt.Errorf("The Utreexo data was damaged. you can cleanup your data base by '--droputreexo'.")
-		}
-	}
 
 	os.MkdirAll(bn.getUtreexoDirPath(), os.ModePerm)
 
@@ -92,11 +86,22 @@ func (bn *UtreexoModule) Init() error {
 	} else {
 		log.Info("Creating new forestdata")
 		forest, err = bn.createForest()
+
+		bn.info.indexHash = hash.ZeroHash
+		bn.info.indexOrder = 0
 	}
 	if err != nil {
 		return err
 	}
 	bn.forest = forest
+
+	if bn.info.isValid() {
+		curIB := bn.bd.GetBlockByOrder(bn.info.indexOrder)
+		if !curIB.IsEqual(bn.info.GetHash()) {
+			return fmt.Errorf("The Utreexo data was damaged. you can cleanup your data base by '--droputreexo'.")
+		}
+	}
+
 	//
 	mainIB := bn.bd.GetMainChainTip()
 	if bn.info.indexOrder < mainIB.GetOrder() || !bn.info.isValid() {

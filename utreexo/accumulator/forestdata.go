@@ -2,6 +2,7 @@ package accumulator
 
 import (
 	"fmt"
+	"github.com/Qitmeer/qitmeer/log"
 	"os"
 )
 
@@ -84,7 +85,7 @@ func (d *diskForestData) read(pos uint64) Hash {
 	var h Hash
 	_, err := d.f.ReadAt(h[:], int64(pos*leafSize))
 	if err != nil {
-		fmt.Printf("\tWARNING!! read %x pos %d %s\n", h, pos, err.Error())
+		log.Warn(fmt.Sprintf("\tWARNING!! read %x pos %d %s\n", h, pos, err.Error()))
 	}
 	return h
 }
@@ -93,7 +94,7 @@ func (d *diskForestData) read(pos uint64) Hash {
 func (d *diskForestData) write(pos uint64, h Hash) {
 	_, err := d.f.WriteAt(h[:], int64(pos*leafSize))
 	if err != nil {
-		fmt.Printf("\tWARNING!! write pos %d %s\n", pos, err.Error())
+		log.Warn(fmt.Sprintf("\tWARNING!! write pos %d %s\n", pos, err.Error()))
 	}
 }
 
@@ -115,23 +116,23 @@ func (d *diskForestData) swapHashRange(a, b, w uint64) {
 	brange := make([]byte, 32*w)
 	_, err := d.f.ReadAt(arange, int64(a*leafSize)) // read at a
 	if err != nil {
-		fmt.Printf("\tshr WARNING!! read pos %d len %d %s\n",
-			a*leafSize, w, err.Error())
+		log.Warn(fmt.Sprintf("\tshr WARNING!! read pos %d len %d %s\n",
+			a*leafSize, w, err.Error()))
 	}
 	_, err = d.f.ReadAt(brange, int64(b*leafSize)) // read at b
 	if err != nil {
-		fmt.Printf("\tshr WARNING!! read pos %d len %d %s\n",
-			b*leafSize, w, err.Error())
+		log.Warn(fmt.Sprintf("\tshr WARNING!! read pos %d len %d %s\n",
+			b*leafSize, w, err.Error()))
 	}
 	_, err = d.f.WriteAt(arange, int64(b*leafSize)) // write arange to b
 	if err != nil {
-		fmt.Printf("\tshr WARNING!! write pos %d len %d %s\n",
-			b*leafSize, w, err.Error())
+		log.Warn(fmt.Sprintf("\tshr WARNING!! write pos %d len %d %s\n",
+			b*leafSize, w, err.Error()))
 	}
 	_, err = d.f.WriteAt(brange, int64(a*leafSize)) // write brange to a
 	if err != nil {
-		fmt.Printf("\tshr WARNING!! write pos %d len %d %s\n",
-			a*leafSize, w, err.Error())
+		log.Warn(fmt.Sprintf("\tshr WARNING!! write pos %d len %d %s\n",
+			a*leafSize, w, err.Error()))
 	}
 }
 
@@ -139,7 +140,7 @@ func (d *diskForestData) swapHashRange(a, b, w uint64) {
 func (d *diskForestData) size() uint64 {
 	s, err := d.f.Stat()
 	if err != nil {
-		fmt.Printf("\tWARNING: %s. Returning 0", err.Error())
+		log.Warn(fmt.Sprintf("\tWARNING: %s. Returning 0", err.Error()))
 		return 0
 	}
 	return uint64(s.Size() / leafSize)

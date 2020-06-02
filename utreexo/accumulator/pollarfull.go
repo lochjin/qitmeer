@@ -2,13 +2,14 @@ package accumulator
 
 import (
 	"fmt"
+	"github.com/Qitmeer/qitmeer/log"
 )
 
 // read is just like forestData read but for pollard
 func (p *Pollard) read(pos uint64) Hash {
 	n, _, _, err := p.grabPos(pos)
 	if err != nil {
-		fmt.Printf("read err %s pos %d\n", err.Error(), pos)
+		log.Error(fmt.Sprintf("read err %s pos %d\n", err.Error(), pos))
 		return empty
 	}
 	if n == nil {
@@ -64,14 +65,14 @@ func (p *Pollard) ProveBatch(hs []Hash) (BatchProof, error) {
 
 		pos, ok := p.positionMap[wanted.Mini()]
 		if !ok {
-			fmt.Printf(p.ToString())
+			log.Error(fmt.Sprintf(p.ToString()))
 			return bp, fmt.Errorf("hash %x not found", wanted)
 		}
 
 		// should never happen
 		if pos > p.numLeaves {
 			for m, p := range p.positionMap {
-				fmt.Printf("%x @%d\t", m[:4], p)
+				log.Error(fmt.Sprintf("%x @%d\t", m[:4], p))
 			}
 			return bp, fmt.Errorf(
 				"ProveBlock: got leaf position %d but only %d leaves exist",
@@ -164,7 +165,7 @@ func (p *Pollard) ProveBatch(hs []Hash) (BatchProof, error) {
 		bp.Proof[i] = n.Val
 	}
 	if verbose {
-		fmt.Printf("blockproof targets: %v\n", bp.Targets)
+		log.Trace(fmt.Sprintf("blockproof targets: %v\n", bp.Targets))
 	}
 
 	return bp, nil

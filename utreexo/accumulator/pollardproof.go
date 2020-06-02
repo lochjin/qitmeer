@@ -2,6 +2,7 @@ package accumulator
 
 import (
 	"fmt"
+	"github.com/Qitmeer/qitmeer/log"
 )
 
 // IngestBlockProof populates the Pollard with all needed data to delete the
@@ -69,7 +70,7 @@ func (p *Pollard) IngestBatchProof(bp BatchProof) error {
 		if node.niece[lr^1] == nil {
 			node.niece[lr^1] = new(polNode)
 			node.niece[lr^1].data = proofMap[pos^1]
-			fmt.Printf("------wrote %x at %d\n", proofMap[pos^1], pos^1)
+			log.Trace(fmt.Sprintf("------wrote %x at %d\n", proofMap[pos^1], pos^1))
 			if node.niece[lr^1].data == empty {
 				return fmt.Errorf("Wrote an empty hash h %d under %04x %d.niece[%d]",
 					h, node.data[:4], pos, lr^1)

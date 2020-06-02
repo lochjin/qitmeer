@@ -2,6 +2,7 @@ package accumulator
 
 import (
 	"fmt"
+	"github.com/Qitmeer/qitmeer/log"
 )
 
 /* we need to be able to undo blocks!  for bridge nodes at least.
@@ -51,14 +52,14 @@ func (f *Forest) Undo(ub undoBlock) error {
 	// f.forest[pos] = empty
 	// }
 
-	fmt.Printf("\t\t### UNDO DATA\n")
-	fmt.Printf("fnl %d leaf moves %d %v\n", f.numLeaves, len(leafMoves), leafMoves)
-	fmt.Printf("ub hashes %d\n", len(ub.hashes))
+	log.Trace(fmt.Sprintf("\t\t### UNDO DATA\n"))
+	log.Trace(fmt.Sprintf("fnl %d leaf moves %d %v\n", f.numLeaves, len(leafMoves), leafMoves))
+	log.Trace(fmt.Sprintf("ub hashes %d\n", len(ub.hashes)))
 
 	// remove everything between prevNumLeaves and numLeaves from positionMap
 	for p := f.numLeaves; p < f.numLeaves+prevAdds; p++ {
-		fmt.Printf("remove %x@%d from map\n",
-			f.data.read(p).Prefix(), f.positionMap[f.data.read(p).Mini()])
+		log.Trace(fmt.Sprintf("remove %x@%d from map\n",
+			f.data.read(p).Prefix(), f.positionMap[f.data.read(p).Mini()]))
 		delete(f.positionMap, f.data.read(p).Mini())
 	}
 
@@ -79,8 +80,8 @@ func (f *Forest) Undo(ub undoBlock) error {
 
 	// go through swaps in reverse order
 	for i, a := range leafMoves {
-		fmt.Printf("swapped %d %x, %d %x\n", a.to,
-			f.data.read(a.to).Prefix(), a.from, f.data.read(a.from).Prefix())
+		log.Trace(fmt.Sprintf("swapped %d %x, %d %x\n", a.to,
+			f.data.read(a.to).Prefix(), a.from, f.data.read(a.from).Prefix()))
 		f.data.swapHash(a.from, a.to)
 		dirt[2*i] = a.to       // this is wrong, it way over hashes
 		dirt[(2*i)+1] = a.from // also should be parents
@@ -89,11 +90,11 @@ func (f *Forest) Undo(ub undoBlock) error {
 	// update positionMap.  The stuff we do want has been moved in to the forest,
 	// the stuff we don't want has been moved to the right past the edge
 	for p := f.numLeaves; p < prevNumLeaves; p++ {
-		fmt.Printf("put back edge %x@%d from map\n", f.data.read(p).Prefix(), p)
+		log.Trace(fmt.Sprintf("put back edge %x@%d from map\n", f.data.read(p).Prefix(), p))
 		f.positionMap[f.data.read(p).Mini()] = p
 	}
 	for _, p := range ub.positions {
-		fmt.Printf("put back internal %x@%d in map\n", f.data.read(p).Prefix(), p)
+		log.Trace(fmt.Sprintf("put back internal %x@%d in map\n", f.data.read(p).Prefix(), p))
 		f.positionMap[f.data.read(p).Mini()] = p
 	}
 	for _, d := range dirt {
@@ -102,7 +103,7 @@ func (f *Forest) Undo(ub undoBlock) error {
 		m := f.data.read(d).Mini()
 		oldpos := f.positionMap[m]
 		if oldpos != d {
-			fmt.Printf("update map %x %d to %d\n", m[:4], oldpos, d)
+			log.Trace(fmt.Sprintf("update map %x %d to %d\n", m[:4], oldpos, d))
 			delete(f.positionMap, m)
 			f.positionMap[m] = d
 		}
@@ -111,13 +112,13 @@ func (f *Forest) Undo(ub undoBlock) error {
 	// rehash above all tos/froms
 	f.numLeaves = prevNumLeaves // change numLeaves before rehashing
 	sortUint64s(dirt)
-	fmt.Printf("rehash dirt: %v\n", dirt)
+	log.Trace(fmt.Sprintf("rehash dirt: %v\n", dirt))
 	err := f.reHash(dirt)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("post undo forest %s\n", f.ToString())
+	log.Trace(fmt.Sprintf("post undo forest %s\n", f.ToString()))
 	return nil
 }
 
@@ -134,8 +135,8 @@ func (f *Forest) BuildUndoData(numadds uint64, dels []uint64) *undoBlock {
 	for i, _ := range ub.positions {
 		ub.hashes[i] = f.data.read(f.numLeaves + uint64(i))
 		if ub.hashes[i] == empty {
-			fmt.Printf("warning, wrote empty hash for position %d\n",
-				ub.positions[i])
+			log.Warn(fmt.Sprintf("warning, wrote empty hash for position %d\n",
+				ub.positions[i]))
 		}
 	}
 
