@@ -182,6 +182,7 @@ func newQitmeerFullNode(node *Node) (*QitmeerFull, error) {
 		qm.txManager.MemPool().(*mempool.TxPool), qm.timeSource, qm.blockManager, defaultNumWorkers)
 
 	qm.utreexoNode, err = utreexo.NewUtreexoModule(qm.blockManager.GetChain(), node.DB, node.Config)
+	qm.blockManager.Utreexo = qm.utreexoNode
 	return &qm, err
 }
 

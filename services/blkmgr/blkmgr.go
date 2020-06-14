@@ -19,6 +19,7 @@ import (
 	"github.com/Qitmeer/qitmeer/params"
 	"github.com/Qitmeer/qitmeer/services/common/progresslog"
 	"github.com/Qitmeer/qitmeer/services/zmq"
+	"github.com/Qitmeer/qitmeer/utreexo"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -77,6 +78,9 @@ type BlockManager struct {
 
 	// zmq notification
 	zmqNotify zmq.IZMQNotification
+
+	// utreexo
+	Utreexo *utreexo.UtreexoModule
 }
 
 // NewBlockManager returns a new block manager.
@@ -238,7 +242,7 @@ func (b *BlockManager) handleNotifyMsg(notification *blockchain.Notification) {
 		*/
 
 		b.zmqNotify.BlockConnected(block)
-
+		b.Utreexo.BlockConnected(block)
 	// A block has been disconnected from the main block chain.
 	case blockchain.BlockDisconnected:
 		log.Trace("Chain disconnected notification.")

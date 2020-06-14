@@ -451,7 +451,7 @@ func (f *Forest) reMap(destRows uint8) error {
 		return fmt.Errorf("changing by more than 1 not programmed yet")
 	}
 
-	log.Trace(fmt.Sprintf("remap forest %d rows -> %d rows\n", f.rows, destRows))
+	log.Trace(fmt.Sprintf("remap forest %d rows -> %d rows", f.rows, destRows))
 
 	// for row reduction
 	if destRows < f.rows {
@@ -592,8 +592,8 @@ func (f *Forest) PrintPositionMap() string {
 
 // WriteForest writes the numLeaves and rows to miscForestFile
 func (f *Forest) WriteForest(miscForestFile *os.File) error {
-	log.Trace(fmt.Sprintf("numLeaves=", f.numLeaves))
-	log.Trace(fmt.Sprintf("f.rows=", f.rows))
+	log.Trace(fmt.Sprintf("numLeaves=%d", f.numLeaves))
+	log.Trace(fmt.Sprintf("f.rows=%d", f.rows))
 	_, err := miscForestFile.WriteAt(append(U64tB(f.numLeaves), U8tB(f.rows)...), 0)
 	if err != nil {
 		return err
