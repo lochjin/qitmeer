@@ -38,15 +38,20 @@ const (
 	// Reorganization indicates that a blockchain reorganization is in
 	// progress.
 	Reorganization
+
+	// BlockWillDisconnect indicates the associated block will
+	// from the main chain.
+	BlockWillDisconnect
 )
 
 // notificationTypeStrings is a map of notification types back to their constant
 // names for pretty printing.
 var notificationTypeStrings = map[NotificationType]string{
-	BlockAccepted:     "BlockAccepted",
-	BlockConnected:    "BlockConnected",
-	BlockDisconnected: "BlockDisconnected",
-	Reorganization:    "Reorganization",
+	BlockAccepted:       "BlockAccepted",
+	BlockConnected:      "BlockConnected",
+	BlockDisconnected:   "BlockDisconnected",
+	Reorganization:      "Reorganization",
+	BlockWillDisconnect: "BlockWillDisconnect",
 }
 
 // String returns the NotificationType in human-readable form.

@@ -292,6 +292,32 @@ func (bn *UtreexoModule) BlockConnected(blk *types.SerializedBlock) {
 	bn.msgChan <- &addBlockMsg{blk, txs, uint(blk.Order())}
 }
 
+func (bn *UtreexoModule) BlockWillDisconnect(blk *types.SerializedBlock) {
+	// Ignore if we are shutting down.
+	if atomic.LoadInt32(&bn.shutdown) != 0 {
+		return
+	}
+
+	txs := map[int]*types.Transaction{}
+	err := bn.db.View(func(dbTx database.Tx) error {
+
+		for i, tx := range blk.Transactions() {
+			if index.DBHasTxIndexEntry(dbTx, tx.Hash()) {
+				txs[i] = tx.Tx
+			} else if i == 0 {
+				return fmt.Errorf("The block is invalid")
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	bn.msgChan <- &removeBlockMsg{blk, txs}
+}
+
 func NewUtreexoModule(bc *blockchain.BlockChain, db database.DB, cfg *config.Config) (*UtreexoModule, error) {
 	bn := UtreexoModule{bc: bc,
 		bd:      bc.BlockDAG(),

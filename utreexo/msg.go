@@ -1,7 +1,6 @@
 package utreexo
 
 import (
-	"github.com/Qitmeer/qitmeer/core/blockdag"
 	"github.com/Qitmeer/qitmeer/core/types"
 )
 
@@ -13,5 +12,5 @@ type addBlockMsg struct {
 
 type removeBlockMsg struct {
 	blk *types.SerializedBlock
-	ib  blockdag.IBlock
+	txs map[int]*types.Transaction
 }

@@ -252,6 +252,15 @@ func (b *BlockManager) handleNotifyMsg(notification *blockchain.Notification) {
 			break
 		}
 		b.zmqNotify.BlockDisconnected(block)
+
+	case blockchain.BlockWillDisconnect:
+		log.Trace("Chain will disconnect notification.")
+		block, ok := notification.Data.(*types.SerializedBlock)
+		if !ok {
+			log.Warn("Chain disconnected notification is not a block slice.")
+			break
+		}
+		b.Utreexo.BlockWillDisconnect(block)
 	// The blockchain is reorganizing.
 	case blockchain.Reorganization:
 		log.Trace("Chain reorganization notification")
