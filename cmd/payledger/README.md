@@ -55,5 +55,5 @@ or
 
 ### How to show blocks info
 ```
-~ ./payledger --blocksinfo
+~ ./payledger --blocksinfo >> out.txt
 ```
